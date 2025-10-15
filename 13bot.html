@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ترتین بات </title>
+  <style>
+   :root{
+  /* رنگ‌ها (تغییر راحت از اینجا) */
+  --bg-900: #071026;
+  --bg-800: #0b1220;
+  --card: #0f1724;
+  --glass: rgba(255,255,255,0.03);
+  --muted: #9aa4b2;
+  --text: #e6eef6;
+  --accent: #7c3aed;
+  --accent-600: #6d28d9;
+  --user: #1f7a8c;
+
+  /* اندازه‌ها */
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --gap: 12px;
+
+  /* سایه‌ها */
+  --shadow-soft: 0 8px 30px rgba(2,6,23,0.55);
+  --shadow-card: 0 6px 18px rgba(2,6,23,0.45);
+
+  /* تایپوگرافی */
+  --font-sans: "Vazirmatn", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+}
+
+/* ===== Base ===== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:linear-gradient(180deg,var(--bg-900) 0%, var(--bg-800) 100%);
+  color:var(--text);
+  font-family:var(--font-sans);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  transition:background .25s ease,color .25s ease;
+}
+
+/* App container */
+.app{
+  width:100%;
+  max-width:940px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+  border-radius:var(--radius-lg);
+  padding:18px;
+  box-shadow:var(--shadow-soft);
+  border:1px solid rgba(255,255,255,0.03);
+  transition:box-shadow .2s ease, background .2s ease;
+  backdrop-filter: blur(6px);
+}
+
+/* Header */
+header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+header h1{font-size:18px;margin:0;font-weight:600}
+.small{font-size:13px;color:var(--muted)}
+
+/* controls */
+.controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+.toggle, .icon-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.04);
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+  transition:transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.toggle:hover, .icon-btn:hover{ transform:translateY(-2px); border-color: rgba(255,255,255,0.07); }
+
+/* Chat area */
+.chat{
+  height:62vh;
+  overflow:auto;
+  padding:16px;
+  border-radius:12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+  margin-bottom:12px;
+  scroll-behavior:smooth;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* Message row */
+.msg{
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+  opacity:0;
+  transform:translateY(6px);
+  animation:msgIn .26s forwards ease;
+  position:relative;
+}
+@keyframes msgIn{to{opacity:1;transform:none}}
+
+/* Avatar */
+.avatar{
+  width:40px;height:40px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,var(--accent),var(--accent-600));
+  box-shadow:0 8px 22px rgba(124,58,237,0.12);
+  color:#fff;font-weight:700;font-size:14px;
+}
+
+/* Bubble */
+.bubble{
+  max-width:78%;
+  padding:12px 14px;
+  border-radius:12px;
+  background:var(--glass);
+  line-height:1.45;
+  word-break:break-word;
+  position:relative;
+  box-shadow:var(--shadow-card);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.msg.user .bubble{ background:linear-gradient(90deg,var(--user), #2aa1bd); color:#fff; border-bottom-right-radius:6px; }
+.msg.bot .bubble{ background: rgba(255,255,255,0.03); border-bottom-left-radius:6px; }
+
+/* Hover lift */
+.msg:hover .bubble{ transform:translateY(-3px); box-shadow:0 14px 40px rgba(2,6,23,0.55); }
+
+/* Footer (input area) */
+footer{display:flex;gap:8px;align-items:flex-end}
+textarea{
+  flex:1;min-height:52px;max-height:200px;
+  padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);
+  background:transparent;color:inherit;resize:none;outline:none;
+  transition:border-color .12s ease, box-shadow .12s ease;
+}
+textarea:focus{ border-color: rgba(124,58,237,0.6); box-shadow:0 6px 24px rgba(124,58,237,0.06); }
+button{ background:var(--accent); border:none; color:white; padding:10px 14px; border-radius:10px; cursor:pointer; transition:opacity .14s, transform .12s; }
+button:hover{ opacity:.95; transform:translateY(-2px); }
+
+/* Copy/button UI inside messages */
+.copy-btn, .code-copy-btn{
+  background: rgba(55,65,81,0.85);
+  border:none;color:#fff;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12px;
+  position:absolute; top:8px; left:8px; opacity:0; transform:translateY(0);
+  transition:opacity .18s ease, transform .18s ease;
+}
+.msg:hover .copy-btn{ opacity:1; transform:translateY(-2px); }
+.code-block{ position:relative; margin-top:8px; border-radius:8px; overflow:hidden; }
+
+/* code block styling */
+pre{ background:linear-gradient(180deg, rgba(2,6,23,0.7), rgba(2,6,23,0.85)); padding:12px;border-radius:8px; overflow:auto; direction:ltr; text-align:left; font-family:var(--mono); font-size:13px; color:#cfeffd; }
+code{ font-family:var(--mono); font-size:13px; color:#a5f3fc; }
+
+/* preview area (rendered HTML / output) */
+.preview-area{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  color:var(--text); padding:10px; border-radius:8px; margin-top:8px;
+  border:1px solid rgba(255,255,255,0.02);
+}
+
+/* Loader */
+.loader{
+  display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,0.08);
+  border-top-color:var(--accent); border-radius:50%; animation:spin .9s linear infinite; margin-left:8px;
+}
+@keyframes spin{ to{transform:rotate(360deg)} }
+
+/* Error card */
+.error-card{
+  background:linear-gradient(180deg, rgba(255,0,0,0.06), rgba(120,20,20,0.06));
+  padding:12px;border-radius:10px;border:1px solid rgba(255,0,0,0.06);color:#ffd2d2;
+}
+
+/* small text / muted */
+.small{ font-size:13px; color:var(--muted); }
+
+/* responsive tweaks */
+@media (max-width:720px){
+  .app{ padding:12px; border-radius:12px; }
+  .chat{ height:64vh; padding:12px; }
+  .avatar{ width:36px; height:36px; border-radius:10px; }
+  .bubble{ max-width:80%; padding:10px; }
+  textarea{ min-height:48px; }
+}
+
+/* ===== Light theme ===== */
+body[data-theme="light"]{
+  background:linear-gradient(180deg,#f8fafc,#f1f5f9);
+  color:#0b1220;
+}
+body[data-theme="light"] .app{
+  background:linear-gradient(180deg, rgba(2,6,23,0.02), rgba(255,255,255,0.6));
+  border:1px solid rgba(2,6,23,0.04);
+  box-shadow: 0 8px 28px rgba(2,6,23,0.06);
+}
+body[data-theme="light"] .bubble{ background: rgba(2,6,23,0.03); color:inherit; box-shadow:none; }
+body[data-theme="light"] .msg.user .bubble{ background:linear-gradient(90deg,var(--user), #2aa1bd); color:#fff; }
+body[data-theme="light"] .copy-btn, body[data-theme="light"] .code-copy-btn{ background:#111827; opacity:0.9; }
+
+/* subtle accent color for focus states and links */
+a{ color:var(--accent); text-decoration:underline; text-underline-offset:3px; }
+textarea::placeholder{ color:rgba(255,255,255,0.35); }
+
+/* accessibility */
+button:focus, .toggle:focus, .icon-btn:focus { outline:2px solid rgba(124,58,237,0.18); outline-offset:2px; }
+
+/* utilities (small helpers to keep markup intact) */
+.hidden{ display:none !important; }
+.preview-btn, .code-copy-btn{ font-size:13px; color:#fff; background:#374151; border-radius:6px; padding:6px 8px; border:none; cursor:pointer; }
+
+/* end of stylesheet */
+/* ===== Bubble alignment fix (مشابه ChatGPT) ===== */
+/* ✅ اصلاح جهت و ظاهر پیام‌ها مثل ChatGPT */
+
+.msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 10px 0;
+  animation: fadeInUp 0.25s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.msg.user {
+  justify-content: flex-end;
+}
+
+.msg.bot {
+  justify-content: flex-start;
+}
+
+/* حباب پیام کاربر */
+.msg.user .bubble {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  padding: 12px 14px;
+  border-radius: 16px 4px 16px 16px;
+  max-width: 75%;
+  line-height: 1.5;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  text-align: right;
+}
+
+/* حباب پیام ربات */
+.msg.bot .bubble {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  padding: 12px 14px;
+  border-radius: 4px 16px 16px 16px;
+  max-width: 75%;
+  line-height: 1.5;
+  text-align: left;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+
+/* دکمه کپی داخل پیام */
+.msg .copy-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #334155;
+  border: none;
+  color: #f8fafc;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+.msg:hover .copy-btn {
+  opacity: 1;
+}
+
+/* حباب‌ها جدا از هم با فاصله متعادل */
+.msg + .msg {
+  margin-top: 8px;
+}
+
+
+</style>
+</head>
+<body data-theme="dark">
+  <div class="app" role="application">
+    <header>
+      <div>
+        <h1>ترتین‌بات</h1>
+        <div class="small">برای دیدن اخبار جدید به کانال روبیکا ما به نشانی <code>https://rubika.ir/Thirteen_Developer</code> بپیوندید </div>
+      </div>
+      <div class="controls">
+        <div id="status" class="small">آماده</div>
+        <!-- تم: جایگزین 🌗 با SVG -->
+        <button id="themeToggle" class="toggle" title="تغییر تم">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden>
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+          </svg>
+          تم
+        </button>
+        <!-- کپی چت: جایگزین 📋 با SVG -->
+        <button id="copyChat" class="toggle" title="کپی کل مکالمه">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden>
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9"></path>
+          </svg>
+          کپی چت
+        </button>
+      </div>
+    </header>
+
+    <main class="chat" id="chat" aria-live="polite"></main>
+
+    <footer>
+      <textarea id="input" placeholder="پیامت رو بنویس و Enter یا دکمه ارسال رو بزن..."></textarea>
+      <button id="send">ارسال</button>
+      <button id="clear" style="background:#374151">پاک کردن</button>
+    </footer>
+  </div>
+
+<script>
+  const realApi = 'http://hakhamanesh-bot.ir/api/gpt';
+  const proxies = [
+    'https://api.allorigins.win/get?url=',
+    'https://corsproxy.io/?',
+    'https://thingproxy.freeboard.io/fetch/',
+    'https://yacdn.org/proxy/'
+  ];
+
+  const chatEl = document.getElementById('chat');
+  const inputEl = document.getElementById('input');
+  const sendBtn = document.getElementById('send');
+  const clearBtn = document.getElementById('clear');
+  const statusEl = document.getElementById('status');
+  const themeToggle = document.getElementById('themeToggle');
+  const copyChat = document.getElementById('copyChat');
+
+  // ======= Utilities =======
+  function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  }
+
+  function tryJSONParse(s){try{return JSON.parse(s)}catch{return null}}
+
+  async function tryFetchWithProxies(url) {
+    let lastError;
+    for (const proxy of proxies) {
+      try {
+        const res = await fetch(proxy + encodeURIComponent(url));
+        if (!res.ok) throw new Error(`پاسخ نامعتبر از ${proxy}: ${res.status}`);
+        return res;
+      } catch (err) {
+        lastError = err;
+        console.warn(`⚠️ ${proxy} خطا داد`);
+      }
+    }
+    // fallback: try direct
+    try{
+      const direct = await fetch(url);
+      if (!direct.ok) throw new Error('پاسخ نامشخص از سرور مستقیم');
+      return direct;
+    }catch(err){
+      throw lastError || err;
+    }
+  }
+
+  // ======= Formatting responses (کدها، HTML و ...) =======
+  function formatResponse(text) {
+    if (!text) return '';
+    // Block code ```lang
+    if (/```[\s\S]+?```/.test(text)) {
+      return text.replace(/```(\w+)?([\s\S]*?)```/g, (m, lang, code) => {
+        const safe = escapeHTML(code.trim());
+        const id = 'preview_' + Math.random().toString(36).slice(2);
+        return `\n<div class="code-block">\n  <pre><code>${safe}</code></pre>\n  <button class="code-copy-btn" data-code="${safe}">` +
+               `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+               `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9"></path></svg> کپی کد</button>\n` +
+               `  <button class="preview-btn" data-id="${id}" data-lang="${lang||'html'}">` +
+               `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+               `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg> پیش‌نمایش</button>\n` +
+               `  <div id="${id}" class="preview-area hidden"></div>\n</div>`;
+      }).replace(/\n/g, '<br>');
+    }
+    // Raw HTML
+    if (/<html[\s\S]*?>/.test(text)) {
+      const safe = escapeHTML(text);
+      const id = 'preview_' + Math.random().toString(36).slice(2);
+      return `\n<div class="code-block">\n  <pre><code>${safe}</code></pre>\n  <button class="code-copy-btn" data-code="${safe}">` +
+             `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+             `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9"></path></svg> کپی کد</button>\n` +
+             `  <button class="preview-btn" data-id="${id}" data-lang="html">` +
+             `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+             `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg> پیش‌نمایش</button>\n` +
+             `  <div id="${id}" class="preview-area hidden"></div>\n</div>`;
+    }
+    return escapeHTML(text).replace(/\n/g, '<br>');
+  }
+
+  // ======= Append message with optional HTML =======
+  function appendMessage(text, who='bot', isHTML=false){
+    const msg=document.createElement('div');
+    msg.className='msg '+(who==='user'?'user':'bot');
+    const bubble=document.createElement('div');
+    bubble.className='bubble';
+    bubble.innerHTML=isHTML?text:formatResponse(text);
+    msg.appendChild(bubble);
+
+    // copy whole message
+    const copyBtn=document.createElement('button');
+    copyBtn.className='copy-btn';
+    copyBtn.innerHTML =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+      `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9"></path></svg> کپی`;
+    copyBtn.addEventListener('click',()=>{
+      navigator.clipboard.writeText(bubble.innerText || bubble.textContent);
+      copyBtn.innerHTML =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+        `<path d="M20 6L9 17l-5-5"></path></svg> انجام شد`;
+      setTimeout(()=>copyBtn.innerHTML =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+        `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9"></path></svg> کپی`,1500);
+    });
+    msg.appendChild(copyBtn);
+
+    chatEl.appendChild(msg);
+    chatEl.scrollTop=chatEl.scrollHeight;
+
+    // activate preview/copy code buttons
+    bubble.querySelectorAll('.preview-btn').forEach(btn=>{ btn.addEventListener('click',()=>togglePreview(btn)); });
+    bubble.querySelectorAll('.code-copy-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        navigator.clipboard.writeText(btn.dataset.code);
+        btn.innerHTML =
+          `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+          `<path d="M20 6L9 17l-5-5"></path></svg> کپی شد`;
+        setTimeout(()=>btn.innerHTML =
+          `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+          `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9"></path></svg> کپی کد`,1500);
+      });
+    });
+
+    return bubble;
+  }
+
+  function togglePreview(btn){
+    const id=btn.dataset.id;
+    const area=document.getElementById(id);
+    if(!area) return;
+    if(area.classList.contains('hidden')){
+      area.classList.remove('hidden');
+      if(btn.dataset.lang==='html'){
+        // نمایش HTML خام (ایمن‌شده)
+        area.innerHTML=area.previousElementSibling.innerText;
+      } else if(btn.dataset.lang==='js'){
+        try{
+          const output=eval(area.previousElementSibling.innerText);
+          area.innerHTML='<pre>'+escapeHTML(String(output)||'✅ اجرا شد')+'</pre>';
+        }catch(e){
+          area.innerHTML='<pre style="color:red;">'+escapeHTML(e.message)+'</pre>';
+        }
+      }
+      // جایگزینی ❌ با SVG در متن دکمه
+      btn.innerHTML =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+        `<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> بستن`;
+    }else{
+      area.classList.add('hidden');
+      area.innerHTML='';
+      // جایگزینی 👁️ با SVG
+      btn.innerHTML =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+        `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg> پیش‌نمایش`;
+    }
+  }
+
+  // ======= Typing effect =======
+  function typeWriter(element, text, speed=18){
+    element.innerHTML='';
+    let i=0;
+    return new Promise(resolve=>{
+      const timer=setInterval(()=>{
+        const nextChar = text.charAt(i);
+        element.innerHTML += escapeHTML(nextChar);
+        i++;
+        chatEl.scrollTop = chatEl.scrollHeight;
+        if(i>=text.length){ clearInterval(timer); resolve(); }
+      }, speed);
+    });
+  }
+
+  // nicer error message box
+  function showError(message, details){
+    const html = `<div class="error-card"><strong>` +
+                 `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+                 `<circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg> مشکلی پیش اومد</strong><div style="margin-top:6px">${escapeHTML(message)}</div>${details?`<pre style="margin-top:8px;background:transparent;border-left:3px solid rgba(255,255,255,0.04);padding-left:8px;">${escapeHTML(details)}</pre>`:''}</div>`;
+    appendMessage(html,'bot',true);
+  }
+
+  // ======= Creator quick reply (همان الگوی شما) =======
+ // ======= تشخیص سوال درباره سازنده (پایدار و بدون regex مشکل‌ساز) =======
+const creatorKeywords = [
+  "سازنده کیه",
+  "سازندت کیه",
+  "سازنده‌ات کیه",
+  "کی ساختت",
+  "کی تو رو ساخته",
+  "کی تو را ساخته",
+  "تورو کی ساخته",
+  "تورو کی درست کرده",
+  "تورو کی برنامه نویسی کرده",
+  "چه کسی ساخته",
+  "چه کسی درست کرده",
+  "چه کسی تو رو ساخته",
+  "برنامه نویس کیه",
+  "برنامه‌نویست کیه",
+  "developer",
+  "creator",
+  "who made you",
+  "who created you",
+  "your creator",
+  "your programmer"
+];
+
+// حذف نیم‌فاصله و فاصله‌های اضافی برای تشخیص بهتر
+function normalizeTextForMatch(s){
+  if(!s) return "";
+  return s.replace(/\u200c/g, ' ')
+          .replace(/\s+/g, ' ')
+          .replace(/[؟!.,;]/g, ' ')
+          .trim()
+          .toLowerCase();
+}
+
+// بررسی اینکه آیا کاربر دربارهٔ سازنده سؤال کرده یا نه
+function isAskingAboutCreator(text){
+  const t = normalizeTextForMatch(text);
+  return creatorKeywords.some(k => t.includes(normalizeTextForMatch(k)));
+}
+
+
+  function saveChatToLocal(){
+    try{ localStorage.setItem('tertin_chat', chatEl.innerHTML); }catch(e){}
+  }
+  function loadChatFromLocal(){
+    try{ const s = localStorage.getItem('tertin_chat'); if(s) chatEl.innerHTML = s; }catch(e){}
+  }
+
+  // load saved chat
+  loadChatFromLocal();
+
+  // ======= send function with typing + improved errors =======
+  async function sendText(text){
+    if(!text || !text.trim()) return;
+
+    // quick creator response
+    if (isAskingAboutCreator(text)) {
+      appendMessage(text, 'user');
+      appendMessage(`سازندهٔ من <b>ماهان ترتین (13)</b> است — یک توسعه‌دهنده و طراح ایرانی که این پروژه را با الهام از مدل‌های GPT ساخته.  \nاو تلاش می‌کند تا تجربه‌ای فارسی، روان و انسانی‌تر از گفتگو با هوش مصنوعی ایجاد کند.\n\n` +
+                    // جایگزینی 🌐 با آیکون globe
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden>` +
+                    `<circle cx="12" cy="12" r="10"></circle><path d="M2 12h20"></path><path d="M12 2c2.5 3.5 2.5 16 0 20"></path></svg> اطلاعات بیشتر: <a href="https://api-code.ir/max/html/RMZ13.html" target="_blank" style="color:${getComputedStyle(document.documentElement).getPropertyValue('--accent')||'#7c3aed'}">https://api-code.ir/max/html/RMZ13.html</a>`, 'bot', true);
+      inputEl.value='';
+      saveChatToLocal();
+      return;
+    }
+
+    appendMessage(text,'user');
+    inputEl.value='';
+
+    // temporary loading bubble
+    const loadingBubble = appendMessage('<span class="loader"></span> در حال دریافت پاسخ...', 'bot', true);
+    statusEl.textContent='در حال ارتباط با سرور...';
+
+    try{
+      const targetUrl=`${realApi}?text=${encodeURIComponent(text)}`;
+      const res = await tryFetchWithProxies(targetUrl);
+
+      // try to parse response
+      const data = await res.json();
+      const raw = data.contents || '';
+      let json = tryJSONParse(raw);
+      const answer = json?.answer || raw || '(پاسخ نامشخص)';
+
+      // use typing effect to reveal the answer
+      // clear loader and replace with bubble we can type into
+      loadingBubble.innerHTML = '';
+      const typedBubble = loadingBubble; // bubble element
+      await typeWriter(typedBubble, answer, 12);
+
+      // attach preview/copy handlers (in case the typed content included code blocks we transformed earlier)
+      typedBubble.querySelectorAll('.preview-btn').forEach(btn=> btn.addEventListener('click',()=>togglePreview(btn)));
+      typedBubble.querySelectorAll('.code-copy-btn').forEach(btn=> btn.addEventListener('click',()=>{ navigator.clipboard.writeText(btn.dataset.code); btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden><path d="M20 6L9 17l-5-5"></path></svg> کپی شد`; setTimeout(()=>btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9"></path></svg> کپی کد`,1500); }));
+
+      statusEl.textContent='آماده';
+      saveChatToLocal();
+    }catch(err){
+      // show nicer error and a retry suggestion
+      loadingBubble.remove();
+      statusEl.textContent='خطا';
+      showError('خطا در اتصال به سرور. لطفاً دوباره تلاش کن یا وضعیت اینترنت/آدرس سرور رو بررسی کن.', err.message || String(err));
+      saveChatToLocal();
+    }
+  }
+
+  // ======= event listeners =======
+  sendBtn.addEventListener('click', ()=> sendText(inputEl.value));
+  inputEl.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendText(inputEl.value); } });
+  clearBtn.addEventListener('click', ()=>{ chatEl.innerHTML=''; statusEl.textContent='آماده'; localStorage.removeItem('tertin_chat'); });
+
+  copyChat.addEventListener('click', ()=>{
+    navigator.clipboard.writeText(chatEl.innerText || chatEl.textContent || '').then(()=>{
+      copyChat.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden><path d="M20 6L9 17l-5-5"></path></svg> ✅ کپی شد`;
+      setTimeout(()=>{ copyChat.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9"></path></svg> کپی چت`; },1500);
+    }).catch(()=>{
+      copyChat.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden><circle cx="12" cy="12" r="10"></circle><path d="M10 10l4 4m0-4l-4 4"></path></svg> ناموفق`;
+      setTimeout(()=>{ copyChat.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9"></path></svg> کپی چت`; },1500);
+    });
+  });
+
+  // theme toggle
+  function toggleTheme(){
+    const root = document.body;
+    const cur = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const next = cur === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('tertin_theme', next);
+  }
+  themeToggle.addEventListener('click', toggleTheme);
+  // load saved theme
+  (function(){ const t = localStorage.getItem('tertin_theme'); if(t) document.body.setAttribute('data-theme', t); })();
+
+  // initial greeting
+  appendMessage('سلام! ' +
+                // جایگزینی ✨ با SVG ستاره کوچک
+                `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden><path d="M12 2l2.39 4.85L20 9.24l-4 3.9L17.79 20 12 17.27 6.21 20 8 13.14 4 9.24l5.61-2.39L12 2z"/></svg>` +
+                ' من ترتین‌بات هستم — حالا با تایپ افکت، تم روشن/تاریک، مدیریت بهتر خطا و افکت‌های UX. امتحانش کن!', 'bot', true);
+
+  // save periodically
+  setInterval(saveChatToLocal, 2000);
+
+</script>
+
+</body>
+</html>
