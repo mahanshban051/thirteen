@@ -452,10 +452,8 @@ const realApi = 'https://gpt4.api-sina-free.workers.dev/gpt4';
 
 const proxies = [
   'https://api.allorigins.win/get?url=',
-/*  'https://corsproxy.io/?',
-  'https://thingproxy.freeboard.io/fetch/',
-  'https://yacdn.org/proxy/'*/
 ];
+
 const chatEl = document.getElementById('chat');
 const inputEl = document.getElementById('input');
 const sendBtn = document.getElementById('send');
@@ -483,7 +481,6 @@ async function tryFetchWithProxies(url) {
     }
   }
 
-
   try {
     const direct = await fetch(url);
     if (!direct.ok) throw new Error(`پاسخ نامشخص از سرور مستقیم (${direct.status})`);
@@ -494,7 +491,6 @@ async function tryFetchWithProxies(url) {
   }
 }
 
-
 function formatResponse(text) {
   if (!text) return '';
   return escapeHTML(text).replace(/\n/g, '<br>');
@@ -503,7 +499,6 @@ function formatResponse(text) {
 function appendMessage(text, who = 'bot', isHTML = false) {
   const msg = document.createElement('div');
   msg.className = 'msg ' + (who === 'user' ? 'user' : 'bot');
-
 
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
@@ -563,7 +558,6 @@ function appendMessage(text, who = 'bot', isHTML = false) {
   return bubble;
 }
 
-
 function typeWriter(element, text, speed = 15) {
   element.innerHTML = '';
   let i = 0;
@@ -607,13 +601,12 @@ async function sendText(text) {
   statusEl.textContent = 'در حال ارتباط با سرور...';
 
   try {
-    const basePrompt = '(نکته پیش فرض: تو ترتین بات هستی که توسط ماهان(13) ساخته شدی ماهان یک برنامه نویس ایرانی ساکن مشهد هست و 18 سالشه لینک وبسایت اون https://api-code.ir/max/html/RMZ13.html اون  لینک کانال روبیکا او:@Thirteen_Developer تا وقتی راجب سازندت نپرسیدم راجبش حرف نزن)';
+    const basePrompt = '(نکته پیش فرض: تو ترتین بات هستی که توسط ماهان(13) ساخته شدی. ماهان یک برنامه نویس ایرانی ساکن مشهد است. تا وقتی راجب سازندت نپرسیدم راجبش حرف نزن)';
     const fullPrompt = `${basePrompt} ${text}`;
     const targetUrl = `${realApi}?text=${encodeURIComponent(fullPrompt)}`;
 
     const res = await tryFetchWithProxies(targetUrl);
-    const raw = await res.text(); 
-    console.log('🛰 پاسخ خام از سرور:', raw);
+    const raw = await res.text();
 
     let data;
     try {
@@ -624,36 +617,44 @@ async function sendText(text) {
 
     let answer = '(پاسخ نامشخص)';
 
-if (typeof data === 'string') {
-  answer = data;
-} else if (data.contents) {
-  try {
-    const inner = JSON.parse(data.contents);
-    answer =
-      inner.answer ||
-      inner.response ||
-      inner.result ||
-      inner.Result ||
-      data.contents;
-  } catch {
-    answer = data.contents;
-  }
-} else if (data.answer || data.response || data.result || data.Result) {
-  answer =
-    data.answer ||
-    data.response ||
-    data.result ||
-    data.Result;
-} else if (data.error) {
-  throw new Error(data.error);
-} else {
-  // اگر فیلد خاصی نبود، شاید JSON خودش فقط شامل رشته‌ی نهایی باشه
-  answer = JSON.stringify(data);
-}
+    if (typeof data === 'string') {
+      answer = data;
+    } else if (data.contents) {
+      try {
+        const inner = JSON.parse(data.contents);
+        answer =
+          inner.answer ||
+          inner.response ||
+          inner.result ||
+          inner.Result ||
+          data.contents;
+      } catch {
+        answer = data.contents;
+      }
+    } else if (data.answer || data.response || data.result || data.Result) {
+      answer =
+        data.answer ||
+        data.response ||
+        data.result ||
+        data.Result;
+    } else if (data.error) {
+      throw new Error(data.error);
+    } else {
+      answer =
+        data.result ||
+        data.Result ||
+        data.message ||
+        JSON.stringify(data, null, 2);
+    }
 
-
-    if (/failed to contact HuggingFace/i.test(answer)) {
-      throw new Error('ارتباط با سرور هوش مصنوعی قطع شده، لطفاً بعداً دوباره امتحان کن.');
+    // اگر کانال یا نام توسعه‌دهنده در پاسخ وجود داشت، زیر پاسخ اضافه کن
+    if (data.Channels || data["Developed By"]) {
+      const extra = `
+        <div style="font-size:12px; color:#9ca3af; margin-top:6px;">
+          ${data.Channels ? `📢 ${escapeHTML(data.Channels)}<br>` : ''}
+          ${data["Developed By"] ? `👤 ${escapeHTML(data["Developed By"])}` : ''}
+        </div>`;
+      answer += extra;
     }
 
     loadingBubble.innerHTML = '';
@@ -668,7 +669,6 @@ if (typeof data === 'string') {
     saveChatToLocal();
   }
 }
-
 
 sendBtn.addEventListener('click', () => sendText(inputEl.value));
 inputEl.addEventListener('keydown', e => {
@@ -702,11 +702,12 @@ themeToggle.addEventListener('click', toggleTheme);
 appendMessage('سلام! ✨ من ترتین‌بات هستم. چه کمکی ازم برمیاد؟', 'bot', true);
 
 setInterval(saveChatToLocal, 2000);
-
 </script>
+
 
 </body>
 </html>
+
 
 
 
