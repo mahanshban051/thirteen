@@ -623,20 +623,34 @@ async function sendText(text) {
     }
 
     let answer = '(پاسخ نامشخص)';
-    if (typeof data === 'string') {
-      answer = data;
-    } else if (data.contents) {
-      try {
-        const inner = JSON.parse(data.contents);
-        answer = inner.answer || inner.response || data.contents;
-      } catch {
-        answer = data.contents;
-      }
-    } else if (data.answer || data.response || data.result) {
-      answer = data.answer || data.response || data.result;
-    } else if (data.error) {
-      throw new Error(data.error);
-    }
+
+if (typeof data === 'string') {
+  answer = data;
+} else if (data.contents) {
+  try {
+    const inner = JSON.parse(data.contents);
+    answer =
+      inner.answer ||
+      inner.response ||
+      inner.result ||
+      inner.Result ||
+      data.contents;
+  } catch {
+    answer = data.contents;
+  }
+} else if (data.answer || data.response || data.result || data.Result) {
+  answer =
+    data.answer ||
+    data.response ||
+    data.result ||
+    data.Result;
+} else if (data.error) {
+  throw new Error(data.error);
+} else {
+  // اگر فیلد خاصی نبود، شاید JSON خودش فقط شامل رشته‌ی نهایی باشه
+  answer = JSON.stringify(data);
+}
+
 
     if (/failed to contact HuggingFace/i.test(answer)) {
       throw new Error('ارتباط با سرور هوش مصنوعی قطع شده، لطفاً بعداً دوباره امتحان کن.');
@@ -693,6 +707,7 @@ setInterval(saveChatToLocal, 2000);
 
 </body>
 </html>
+
 
 
 
